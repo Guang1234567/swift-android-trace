@@ -20,15 +20,27 @@ For Android API lower than 23 it doesn't give any effect.
  ```
  import AndroidSwiftTrace
  
- .....
+ // ...
  
- public func helloWorld() {
-    beginNativeTraceSection("Hello")
-    
+public func helloWorld_way1() {
+    let snt1 = ScopedNativeTraceSection("android_swift_systrace_001")
+    let snt2 = ScopedNativeTraceSection("android_swift_systrace_002")
+    let snt3 = ScopedNativeTraceSection("android_swift_systrace_003")
+
+    // other code for trace here
     // ...
-    
-    endNativeTraceSection()
- }
+}
+
+// or
+
+public func helloWorld_way2() {
+     ScopedNativeTraceSection.beginTrace("android_swift_systrace_demo")
+
+     // other code for trace here
+     // ...
+
+     ScopedNativeTraceSection.endTrace("android_swift_systrace_demo")
+}
  ```
  
  ### Generate report

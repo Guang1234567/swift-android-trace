@@ -1,0 +1,4 @@
+module CAndroidSwiftTrace [system] {
+    header "wrapper.h"
+    link "android"
+}
