@@ -1,12 +1,11 @@
-import Foundation
 import AndroidSwiftLogcat
 import CAndroidSwiftTrace
+import Foundation
 
 public class ScopedNativeTraceSection {
-
     public static let TAG = "AndroidSwiftTrace"
 
-    private var mSectionName: String;
+    private var mSectionName: String
 
     // note: auto lazy init for global var.
     // but "lazy for static var" is not real lazy,
@@ -23,20 +22,25 @@ public class ScopedNativeTraceSection {
     }
 
     private static func getSdkVersion() -> Int {
-        let capacity = Int(PROP_VALUE_MAX);
-        let pointer: UnsafeMutablePointer<Int8>? = UnsafeMutablePointer<Int8>.allocate(capacity: capacity)
-        pointer?.initialize(repeating: 0, count: capacity)
+        let capacity = Int(PROP_VALUE_MAX)
+        let pointer: UnsafeMutablePointer<Int8> = UnsafeMutablePointer<Int8>.allocate(capacity: capacity)
+        pointer.initialize(repeating: 0, count: capacity)
         defer {
-            pointer?.deinitialize(count: capacity)
-            pointer?.deallocate()
+            pointer.deinitialize(count: capacity)
+            pointer.deallocate()
         }
 
-        __system_property_get("ro.build.version.sdk", pointer)
+        let valueStrLen = __system_property_get("ro.build.version.sdk", pointer)
 
-        guard let cString = pointer else {
+        guard valueStrLen > 0 else {
             return -1
         }
-        return Int(String(cString: cString)) ?? -1
+
+        guard let valueStr = String(validatingUTF8: pointer) else {
+            return -1
+        }
+
+        return Int(valueStr) ?? -1
     }
 
     /**
@@ -44,10 +48,10 @@ public class ScopedNativeTraceSection {
      * when tracing is enabled.
      */
     public static func isNativeTraceEnabled() -> Bool {
-        if (ScopedNativeTraceSection.sdkVersion >= 23) {
+        if ScopedNativeTraceSection.sdkVersion >= 23 {
             return ATrace_isEnabled()
         } else {
-            return false;
+            return false
         }
     }
 
@@ -59,9 +63,9 @@ public class ScopedNativeTraceSection {
      * by the tracing mechanism. If sectionName contains these characters they will be replaced with a
      * space character in the trace.
      */
-    public static func beginTrace(_ sectionName: String) -> Void {
-        if (ScopedNativeTraceSection.sdkVersion >= 23) {
-            //AndroidLogcat.i(ScopedNativeTraceSection.TAG, "beginTrace(\"\(sectionName)\")")
+    public static func beginTrace(_ sectionName: String) {
+        if ScopedNativeTraceSection.sdkVersion >= 23 {
+            // AndroidLogcat.i(ScopedNativeTraceSection.TAG, "beginTrace(\"\(sectionName)\")")
             ATrace_beginSection(sectionName)
         }
     }
@@ -72,10 +76,10 @@ public class ScopedNativeTraceSection {
      * will mark the end of the most recently begun section of code, so care must be taken to ensure
      * that beginSection / endSection pairs are properly nested and called from the same thread.
      */
-    public static func endTrace(_ sectionName: String) -> Void {
-        if (ScopedNativeTraceSection.sdkVersion >= 23) {
+    public static func endTrace(_ sectionName: String) {
+        if ScopedNativeTraceSection.sdkVersion >= 23 {
             ATrace_endSection()
-            //AndroidLogcat.i(ScopedNativeTraceSection.TAG, "endTrace(\"\(sectionName)\")")
+            // AndroidLogcat.i(ScopedNativeTraceSection.TAG, "endTrace(\"\(sectionName)\")")
         }
     }
 }
